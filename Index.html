@@ -1,0 +1,590 @@
+<html><head><base href="https://websim.creation.engine/taskmaster/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskMaster - Tu Asistente Personal</title>
+<style>
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --background-color: #ecf0f1;
+  --text-color: #34495e;
+  --accent-color: #e74c3c;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5em;
+}
+
+nav {
+  background-color: var(--secondary-color);
+  padding: 10px 0;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+nav ul li {
+  margin: 0 10px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: var(--accent-color);
+}
+
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.widget {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.widget:hover {
+  transform: translateY(-5px);
+}
+
+.widget h2 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+#clock {
+  font-size: 2em;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#date {
+  font-size: 1.2em;
+  text-align: center;
+  color: var(--secondary-color);
+}
+
+#task-list, #notes-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#task-list li, #notes-list li {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#task-list li button, #notes-list li button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#task-list li button:hover, #notes-list li button:hover {
+  background-color: #c0392b;
+}
+
+form {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+form input[type="text"] {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+}
+
+form button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #2980b9;
+}
+
+#calendar {
+  width: 100%;
+  height: 300px;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#alarms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.alarm {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alarm button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.alarm button:hover {
+  background-color: #c0392b;
+}
+
+#dark-mode-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: var(--text-color);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#dark-mode-toggle:hover {
+  background-color: var(--accent-color);
+}
+
+.dark-mode {
+  --background-color: #2c3e50;
+  --text-color: #ecf0f1;
+}
+
+.dark-mode .widget {
+  background-color: #34495e;
+}
+
+.dark-mode #task-list li, .dark-mode #notes-list li, .dark-mode .alarm {
+  background-color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>TaskMaster</h1>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#tasks">Tareas</a></li>
+    <li><a href="#calendar">Calendario</a></li>
+    <li><a href="#notes">Notas</a></li>
+    <li><a href="#alarms">Alarmas</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+  <div class="widget" id="clock-widget">
+    <div id="clock"></div>
+    <div id="date"></div>
+  </div>
+
+  <div class="widget" id="tasks">
+    <h2>Tareas</h2>
+    <form id="task-form">
+      <input type="text" id="task-input" placeholder="Nueva tarea" required>
+      <button type="submit">Agregar</button>
+    </form>
+    <ul id="task-list"></ul>
+  </div>
+
+  <div class="widget" id="calendar">
+    <h2>Calendario</h2>
+    <div id="calendar-container"></div>
+  </div>
+
+  <div class="widget" id="notes">
+    <h2>Notas</h2>
+    <form id="note-form">
+      <input type="text" id="note-input" placeholder="Nueva nota" required>
+      <button type="submit">Agregar</button>
+    </form>
+    <ul id="notes-list"></ul>
+  </div>
+
+  <div class="widget" id="alarms">
+    <h2>Alarmas</h2>
+    <form id="alarm-form">
+      <input type="time" id="alarm-input" required>
+      <button type="submit">Agregar alarma</button>
+    </form>
+    <div id="alarms-list"></div>
+  </div>
+</main>
+
+<button id="dark-mode-toggle" aria-label="Cambiar modo oscuro">🌓</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+
+<script>
+// Funcionalidad del reloj y fecha
+function updateClock() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  const dateString = now.toLocaleDateString();
+  document.getElementById('clock').textContent = timeString;
+  document.getElementById('date').textContent = dateString;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// Funcionalidad de tareas
+const taskForm = document.getElementById('task-form');
+const taskInput = document.getElementById('task-input');
+const taskList = document.getElementById('task-list');
+
+taskForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  addTask(taskInput.value);
+  taskInput.value = '';
+});
+
+function addTask(taskText) {
+  const li = document.createElement('li');
+  li.textContent = taskText;
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Eliminar';
+  deleteButton.addEventListener('click', function() {
+    li.remove();
+    saveTasks();
+  });
+  li.appendChild(deleteButton);
+  taskList.appendChild(li);
+  saveTasks();
+}
+
+function saveTasks() {
+  const tasks = Array.from(taskList.children).map(li => li.firstChild.textContent);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+  tasks.forEach(addTask);
+}
+
+loadTasks();
+
+// Funcionalidad de notas
+const noteForm = document.getElementById('note-form');
+const noteInput = document.getElementById('note-input');
+const notesList = document.getElementById('notes-list');
+
+noteForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  addNote(noteInput.value);
+  noteInput.value = '';
+});
+
+function addNote(noteText) {
+  const li = document.createElement('li');
+  li.textContent = noteText;
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Eliminar';
+  deleteButton.addEventListener('click', function() {
+    li.remove();
+    saveNotes();
+  });
+  li.appendChild(deleteButton);
+  notesList.appendChild(li);
+  saveNotes();
+}
+
+function saveNotes() {
+  const notes = Array.from(notesList.children).map(li => li.firstChild.textContent);
+  localStorage.setItem('notes', JSON.stringify(notes));
+}
+
+function loadNotes() {
+  const notes = JSON.parse(localStorage.getItem('notes')) || [];
+  notes.forEach(addNote);
+}
+
+loadNotes();
+
+// Funcionalidad de alarmas
+const alarmForm = document.getElementById('alarm-form');
+const alarmInput = document.getElementById('alarm-input');
+const alarmsList = document.getElementById('alarms-list');
+
+alarmForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  addAlarm(alarmInput.value);
+  alarmInput.value = '';
+});
+
+function addAlarm(alarmTime) {
+  const alarmDiv = document.createElement('div');
+  alarmDiv.className = 'alarm';
+  alarmDiv.textContent = alarmTime;
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Eliminar';
+  deleteButton.addEventListener('click', function() {
+    alarmDiv.remove();
+    saveAlarms();
+  });
+  alarmDiv.appendChild(deleteButton);
+  alarmsList.appendChild(alarmDiv);
+  saveAlarms();
+}
+
+function saveAlarms() {
+  const alarms = Array.from(alarmsList.children).map(div => div.firstChild.textContent);
+  localStorage.setItem('alarms', JSON.stringify(alarms));
+}
+
+function loadAlarms() {
+  const alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+  alarms.forEach(addAlarm);
+}
+
+loadAlarms();
+
+// Funcionalidad de modo oscuro
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const body = document.body;
+
+darkModeToggle.addEventListener('click', function() {
+  body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+});
+
+// Cargar preferencia de modo oscuro
+if (localStorage.getItem('darkMode') === 'true') {
+  body.classList.add('dark-mode');
+}
+
+// Calendario simple con Three.js
+const calendarContainer = document.getElementById('calendar-container');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, calendarContainer.clientWidth / calendarContainer.clientHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+
+renderer.setSize(calendarContainer.clientWidth, calendarContainer.clientHeight);
+calendarContainer.appendChild(renderer.domElement);
+
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
+
+camera.position.z = 5;
+
+function animate() {
+  requestAnimationFrame(animate);
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Efecto de sonido al agregar tarea
+const addTaskSound = new Howl({
+  src: ['https://websim.creation.engine/taskmaster/sounds/add_task.mp3']
+});
+
+taskForm.addEventListener('submit', function() {
+  addTaskSound.play();
+});
+
+// Animación al agregar tarea
+function animateTaskAddition(target) {
+  anime({
+    targets: target,
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    duration: 500,
+    easing: 'easeOutElastic(1, .8)'
+  });
+}
+
+// Gráfico de tareas completadas
+const ctx = document.createElement('canvas').getContext('2d');
+document.getElementById('tasks').appendChild(ctx.canvas);
+
+const tasksChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+    datasets: [{
+      label: 'Tareas Completadas',
+      data: [2, 4, 3, 5, 2, 3, 1],
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+
+// Funcionalidad de arrastrar y soltar para tareas
+new Sortable(taskList, {
+  animation: 150,
+  ghostClass: 'sortable-ghost'
+});
+
+// Implementar comandos de voz simples
+if ('webkitSpeechRecognition' in window) {
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = function(event) {
+    const last = event.results.length - 1;
+    const command = event.results[last][0].transcript.toLowerCase();
+
+    if (command.includes('agregar tarea')) {
+      const taskText = command.replace('agregar tarea', '').trim();
+      addTask(taskText);
+    } else if (command.includes('modo oscuro')) {
+      body.classList.toggle('dark-mode');
+    }
+  };
+
+  recognition.start();
+}
+
+// Optimización de rendimiento
+document.addEventListener('DOMContentLoaded', function() {
+  // Carga diferida de imágenes de fondo
+  const lazyBackgrounds = [].slice.call(document.querySelectorAll('.lazy-background'));
+
+  if ('IntersectionObserver' in window) {
+    let lazyBackgroundObserver = new IntersectionObserver(function(entries, observer) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          lazyBackgroundObserver.unobserve(entry.target);
+        }
+      });
+    });
+
+    lazyBackgrounds.forEach(function(lazyBackground) {
+      lazyBackgroundObserver.observe(lazyBackground);
+    });
+  }
+});
+
+// Accesibilidad
+const widgets = document.querySelectorAll('.widget');
+widgets.forEach((widget, index) => {
+  widget.setAttribute('tabindex', '0');
+  widget.setAttribute('aria-label', `Widget ${index + 1}`);
+});
+
+// Persistencia de datos
+window.addEventListener('beforeunload', function() {
+  saveTasks();
+  saveNotes();
+  saveAlarms();
+});
+
+// Sistema de gestión de estado simple
+const state = {
+  tasks: [],
+  notes: [],
+  alarms: []
+};
+
+function updateState(key, value) {
+  state[key] = value;
+  localStorage.setItem('appState', JSON.stringify(state));
+}
+
+function loadState() {
+  const savedState = JSON.parse(localStorage.getItem('appState'));
+  if (savedState) {
+    Object.assign(state, savedState);
+    state.tasks.forEach(addTask);
+    state.notes.forEach(addNote);
+    state.alarms.forEach(addAlarm);
+  }
+}
+
+loadState();
+</script>
+</body>
+</html>
