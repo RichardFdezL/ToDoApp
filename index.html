@@ -1,0 +1,534 @@
+<html><head><base href="https://todowebapp.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo Web App</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #f5a623;
+  --background-color: #f0f0f0;
+  --text-color: #333;
+  --task-bg-color: #fff;
+  --task-border-color: #ddd;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.dark-mode {
+  --background-color: #222;
+  --text-color: #f0f0f0;
+  --task-bg-color: #333;
+  --task-border-color: #444;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+nav {
+  background-color: var(--secondary-color);
+  padding: 10px 0;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+nav ul li {
+  margin: 0 10px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.widget {
+  background-color: var(--task-bg-color);
+  border: 1px solid var(--task-border-color);
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: calc(50% - 10px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.widget h2 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+#clock {
+  font-size: 2em;
+  text-align: center;
+}
+
+#task-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#task-list li {
+  background-color: var(--task-bg-color);
+  border: 1px solid var(--task-border-color);
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#task-list li button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#task-form input,
+#task-form button {
+  margin-top: 10px;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  background-color: var(--task-bg-color);
+  border: 1px solid var(--task-border-color);
+  padding: 5px;
+  text-align: center;
+}
+
+.current-day {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+#chart-container {
+  width: 100%;
+  height: 300px;
+}
+
+#dark-mode-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .widget {
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Todo Web App</h1>
+</header>
+<nav>
+  <ul>
+    <li><a href="#tasks">Tareas</a></li>
+    <li><a href="#calendar">Calendario</a></li>
+    <li><a href="#notes">Notas</a></li>
+    <li><a href="#alarms">Alarmas</a></li>
+  </ul>
+</nav>
+<div class="container">
+  <main>
+    <div class="widget" id="clock-widget">
+      <h2>Fecha y Hora</h2>
+      <div id="clock"></div>
+    </div>
+    <div class="widget" id="tasks-widget">
+      <h2>Tareas</h2>
+      <ul id="task-list"></ul>
+      <form id="task-form">
+        <input type="text" id="task-input" placeholder="Nueva tarea" required>
+        <input type="date" id="task-date" required>
+        <button type="submit">Agregar Tarea</button>
+      </form>
+    </div>
+    <div class="widget" id="calendar-widget">
+      <h2>Calendario</h2>
+      <div id="calendar"></div>
+    </div>
+    <div class="widget" id="chart-widget">
+      <h2>Gráfica de Tareas por Semana</h2>
+      <canvas id="chart-container"></canvas>
+    </div>
+    <div class="widget" id="notes-widget">
+      <h2>Notas</h2>
+      <textarea id="notes" rows="5" placeholder="Escribe tus notas aquí"></textarea>
+      <button id="save-notes">Guardar Notas</button>
+    </div>
+    <div class="widget" id="alarms-widget">
+      <h2>Alarmas</h2>
+      <form id="alarm-form">
+        <input type="time" id="alarm-time" required>
+        <input type="text" id="alarm-message" placeholder="Mensaje de la alarma" required>
+        <button type="submit">Agregar Alarma</button>
+      </form>
+      <ul id="alarm-list"></ul>
+    </div>
+  </main>
+</div>
+<button id="dark-mode-toggle">Modo Oscuro</button>
+
+<script>
+// Funcionalidad del reloj
+function updateClock() {
+  const now = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  document.getElementById('clock').textContent = now.toLocaleDateString('es-ES', options);
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// Funcionalidad de tareas
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+function renderTasks() {
+  const taskList = document.getElementById('task-list');
+  taskList.innerHTML = '';
+  tasks.forEach((task, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${task.text} - ${new Date(task.date).toLocaleDateString('es-ES')}
+      <button onclick="deleteTask(${index})">Eliminar</button>
+    `;
+    taskList.appendChild(li);
+  });
+  updateChart();
+}
+
+document.getElementById('task-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const taskInput = document.getElementById('task-input');
+  const taskDate = document.getElementById('task-date');
+  if (taskInput.value && taskDate.value) {
+    tasks.push({ text: taskInput.value, date: taskDate.value });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    taskInput.value = '';
+    taskDate.value = '';
+    renderTasks();
+  }
+});
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  renderTasks();
+}
+
+// Funcionalidad del calendario
+function renderCalendar() {
+  const calendar = document.getElementById('calendar');
+  calendar.innerHTML = '';
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('calendar-day');
+    calendar.appendChild(emptyDay);
+  }
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const day = document.createElement('div');
+    day.classList.add('calendar-day');
+    day.textContent = i;
+    if (i === now.getDate()) {
+      day.classList.add('current-day');
+    }
+    calendar.appendChild(day);
+  }
+}
+
+renderCalendar();
+
+// Funcionalidad de la gráfica
+function updateChart() {
+  const ctx = document.getElementById('chart-container').getContext('2d');
+  const tasksByWeek = {};
+
+  tasks.forEach(task => {
+    const date = new Date(task.date);
+    const week = `${date.getFullYear()}-W${String(date.getWeek()).padStart(2, '0')}`;
+    tasksByWeek[week] = (tasksByWeek[week] || 0) + 1;
+  });
+
+  const labels = Object.keys(tasksByWeek).sort();
+  const data = labels.map(week => tasksByWeek[week]);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Tareas por Semana',
+        data: data,
+        backgroundColor: 'rgba(74, 144, 226, 0.6)',
+        borderColor: 'rgba(74, 144, 226, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          stepSize: 1
+        }
+      }
+    }
+  });
+}
+
+// Función auxiliar para obtener el número de semana
+Date.prototype.getWeek = function() {
+  const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+};
+
+// Funcionalidad de notas
+const notesTextarea = document.getElementById('notes');
+const savedNotes = localStorage.getItem('notes');
+if (savedNotes) {
+  notesTextarea.value = savedNotes;
+}
+
+document.getElementById('save-notes').addEventListener('click', () => {
+  localStorage.setItem('notes', notesTextarea.value);
+  alert('Notas guardadas');
+});
+
+// Funcionalidad de alarmas
+let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+
+function renderAlarms() {
+  const alarmList = document.getElementById('alarm-list');
+  alarmList.innerHTML = '';
+  alarms.forEach((alarm, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${alarm.time} - ${alarm.message}
+      <button onclick="deleteAlarm(${index})">Eliminar</button>
+    `;
+    alarmList.appendChild(li);
+  });
+}
+
+document.getElementById('alarm-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const alarmTime = document.getElementById('alarm-time');
+  const alarmMessage = document.getElementById('alarm-message');
+  if (alarmTime.value && alarmMessage.value) {
+    alarms.push({ time: alarmTime.value, message: alarmMessage.value });
+    localStorage.setItem('alarms', JSON.stringify(alarms));
+    alarmTime.value = '';
+    alarmMessage.value = '';
+    renderAlarms();
+  }
+});
+
+function deleteAlarm(index) {
+  alarms.splice(index, 1);
+  localStorage.setItem('alarms', JSON.stringify(alarms));
+  renderAlarms();
+}
+
+// Verificar alarmas
+function checkAlarms() {
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  alarms.forEach(alarm => {
+    if (alarm.time === currentTime) {
+      new Notification('Alarma', { body: alarm.message });
+      new Howl({
+        src: ['alarm-sound.mp3']
+      }).play();
+    }
+  });
+}
+
+setInterval(checkAlarms, 60000);
+
+// Solicitar permiso para notificaciones
+if (Notification.permission !== 'granted') {
+  Notification.requestPermission();
+}
+
+// Modo oscuro
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const body = document.body;
+
+darkModeToggle.addEventListener('click', () => {
+  body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+});
+
+// Verificar preferencia de modo oscuro guardada
+if (localStorage.getItem('darkMode') === 'true') {
+  body.classList.add('dark-mode');
+}
+
+// Inicialización
+renderTasks();
+renderAlarms();
+updateChart();
+
+// Animaciones con Anime.js
+anime({
+  targets: '.widget',
+  translateY: [50, 0],
+  opacity: [0, 1],
+  duration: 1000,
+  delay: anime.stagger(100),
+  easing: 'easeOutQuad'
+});
+
+// Efecto de partículas en 3D con Three.js
+const particleContainer = document.createElement('div');
+particleContainer.style.position = 'fixed';
+particleContainer.style.top = '0';
+particleContainer.style.left = '0';
+particleContainer.style.width = '100%';
+particleContainer.style.height = '100%';
+particleContainer.style.pointerEvents = 'none';
+particleContainer.style.zIndex = '-1';
+document.body.appendChild(particleContainer);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+particleContainer.appendChild(renderer.domElement);
+
+const particles = new THREE.BufferGeometry();
+const particleCount = 1000;
+const posArray = new Float32Array(particleCount * 3);
+
+for (let i = 0; i < particleCount * 3; i++) {
+  posArray[i] = (Math.random() - 0.5) * 5;
+}
+
+particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+const material = new THREE.PointsMaterial({
+  size: 0.005,
+  color: 0x4a90e2
+});
+
+const particleSystem = new THREE.Points(particles, material);
+scene.add(particleSystem);
+
+camera.position.z = 2;
+
+function animateParticles() {
+  requestAnimationFrame(animateParticles);
+  particleSystem.rotation.x += 0.001;
+  particleSystem.rotation.y += 0.001;
+  renderer.render(scene, camera);
+}
+
+animateParticles();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Implementar arrastrar y soltar para las tareas
+new Sortable(document.getElementById('task-list'), {
+  animation: 150,
+  ghostClass: 'sortable-ghost',
+  onEnd: () => {
+    const newOrder = Array.from(document.getElementById('task-list').children).map(li => {
+      const [text, date] = li.textContent.split(' - ');
+      return { text: text.trim(), date: new Date(date.trim()).toISOString().split('T')[0] };
+    });
+    tasks = newOrder;
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+});
+
+// Implementar comandos de voz
+if ('webkitSpeechRecognition' in window) {
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'es-ES';
+
+  recognition.onresult = (event) => {
+    const result = event.results[event.results.length - 1];
+    if (result.isFinal) {
+      const transcript = result[0].transcript.toLowerCase();
+      if (transcript.includes('agregar tarea')) {
+        const taskText = transcript.replace('agregar tarea', '').trim();
+        if (taskText) {
+          tasks.push({ text: taskText, date: new Date().toISOString().split('T')[0] });
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+          renderTasks();
+        }
+      }
+    }
+  };
+
+  recognition.start();
+}
+</script>
+</body>
+</html>
